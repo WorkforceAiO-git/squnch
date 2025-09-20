@@ -324,49 +324,38 @@ async function handleRoute(request, { params }) {
     // Video compression endpoint
     if (route === '/compress/video' && method === 'POST') {
       try {
+        console.log('Video compression endpoint called')
         const { file: buffer, fileName, fileId } = await getFileFromFormData(request)
         
+        console.log(`Processing video: ${fileName}, size: ${buffer.length} bytes, fileId: ${fileId}`)
+        
         const tempDir = await ensureTempDir()
-        const inputPath = path.join(tempDir, `input_${fileId}_${fileName}`)
-        const outputPath = path.join(tempDir, `output_${fileId}_${fileName}`)
+        const fileExt = path.extname(fileName).toLowerCase()
+        const inputPath = path.join(tempDir, `input_${fileId}${fileExt}`)
+        const outputPath = path.join(tempDir, `output_${fileId}.mp4`)
         
         // Write input file
         await fs.writeFile(inputPath, buffer)
+        console.log(`Input file written to: ${inputPath}`)
         
-        // Start compression (this will run in background)
-        compressVideo(inputPath, outputPath, fileId)
-          .then(async (compressedSize) => {
-            // Calculate compression ratio
-            const originalSize = buffer.length
-            const compressionRatio = Math.round((1 - compressedSize / originalSize) * 100)
-            
-            await db.collection('compression_progress').updateOne(
-              { fileId },
-              {
-                $set: {
-                  compressionRatio,
-                  originalSize,
-                  downloadUrl: `/api/download/${fileId}`
-                }
-              }
-            )
-            
-            // Clean up input file
-            fs.unlink(inputPath).catch(console.error)
+        // Start compression with enhanced function
+        compressVideo(inputPath, outputPath, fileId, buffer.length)
+          .then(async (result) => {
+            console.log('Video compression completed:', result)
+            // Input file cleanup is handled in the compression function
           })
           .catch(async (error) => {
             console.error('Video compression failed:', error)
-            // Clean up files
-            fs.unlink(inputPath).catch(console.error)
-            fs.unlink(outputPath).catch(console.error)
+            // Cleanup is handled in the compression function
           })
         
         return handleCORS(NextResponse.json({ 
           message: 'Video compression started',
-          fileId 
+          fileId,
+          originalSize: buffer.length
         }))
       } catch (error) {
-        console.error('Video compression error:', error)
+        console.error('Video compression endpoint error:', error)
         return handleCORS(NextResponse.json(
           { error: error.message },
           { status: 500 }
