@@ -741,17 +741,17 @@ export default function Squnch() {
                     <div className="text-3xl font-black text-primary">$9.99<span className="text-base text-gray-600 font-normal">/month</span></div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600 mb-4">5,000 calls, all endpoints, email support</p>
+                    <p className="text-gray-600 mb-4">10,000 calls, all endpoints, email support</p>
                   </CardContent>
                 </Card>
 
                 <Card className="p-6 border-2 border-primary rounded-3xl bg-white">
                   <CardHeader>
                     <CardTitle className="text-xl font-bold">API Pro</CardTitle>
-                    <div className="text-3xl font-black text-primary">$19.99<span className="text-base text-gray-600 font-normal">/month</span></div>
+                    <div className="text-3xl font-black text-primary">$29.99<span className="text-base text-gray-600 font-normal">/month</span></div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600 mb-4">25,000 calls, priority processing, webhooks</p>
+                    <p className="text-gray-600 mb-4">30,000 calls, priority processing, webhooks</p>
                   </CardContent>
                 </Card>
 
