@@ -20,7 +20,8 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-BASE_URL = f"{os.getenv('NEXT_PUBLIC_BASE_URL', 'http://localhost:3000')}/api"
+# Use localhost for testing since external URL has ingress issues
+BASE_URL = "http://localhost:3000/api"
 TIMEOUT = 30
 
 class SqunchAPITester:
