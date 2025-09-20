@@ -1,14 +1,14 @@
 import './globals.css'
 
 export const metadata = {
-  title: 'Next.js MongoDB Template',
-  description: 'A simple template with App Router, MongoDB, and shadcn/ui',
+  title: 'Squnch - Professional File Compression',
+  description: 'Smart file compression for content creators. Reduce file sizes by 60-85% with imperceptible quality loss.',
 }
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>
+      <body className="font-inter antialiased bg-white">
         {children}
       </body>
     </html>
