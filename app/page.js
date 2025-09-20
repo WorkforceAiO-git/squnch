@@ -927,6 +927,7 @@ export default function Squnch() {
                         onClick={() => fileInputRef.current?.click()}
                         size="lg"
                         className="bg-primary hover:bg-primary/90"
+                        style={{ borderRadius: '25px' }}
                       >
                         Choose Files
                       </Button>
