@@ -95,88 +95,99 @@ async function compressImage(buffer, fileName, quality = 85) {
 
 // Video compression function
 async function compressVideo(inputPath, outputPath, fileId) {
-  return new Promise((resolve, reject) => {
-    const db = connectToMongo()
-    
-    ffmpeg(inputPath)
-      .videoCodec('libx264')
-      .audioCodec('aac')
-      .videoBitrate('1000k')
-      .audioBitrate('128k')
-      .outputOptions([
-        '-preset medium',
-        '-crf 23',
-        '-movflags +faststart',
-        '-pix_fmt yuv420p'
-      ])
-      .on('start', async () => {
-        try {
-          const database = await db
-          await database.collection('compression_progress').insertOne({
-            fileId,
-            status: 'processing',
-            progress: 0,
-            startTime: new Date()
-          })
-        } catch (error) {
-          console.error('Failed to update start status:', error)
-        }
+  return new Promise(async (resolve, reject) => {
+    try {
+      const database = await connectToMongo()
+      
+      // Set FFmpeg path explicitly
+      ffmpeg.setFfmpegPath('/usr/bin/ffmpeg')
+      ffmpeg.setFfprobePath('/usr/bin/ffprobe')
+      
+      await database.collection('compression_progress').insertOne({
+        fileId,
+        status: 'processing',
+        progress: 0,
+        startTime: new Date()
       })
-      .on('progress', async (progress) => {
-        try {
-          const database = await db
-          await database.collection('compression_progress').updateOne(
-            { fileId },
-            {
-              $set: {
-                progress: Math.round(progress.percent || 0),
-                status: 'processing'
+      
+      ffmpeg(inputPath)
+        .videoCodec('libx264')
+        .audioCodec('aac')
+        .videoBitrate('1000k')
+        .audioBitrate('128k')
+        .outputOptions([
+          '-preset medium',
+          '-crf 23',
+          '-movflags +faststart',
+          '-pix_fmt yuv420p'
+        ])
+        .on('start', (commandLine) => {
+          console.log('FFmpeg process started:', commandLine)
+        })
+        .on('progress', async (progress) => {
+          try {
+            const progressPercent = Math.round(progress.percent || 0)
+            console.log(`Compression progress: ${progressPercent}%`)
+            
+            await database.collection('compression_progress').updateOne(
+              { fileId },
+              {
+                $set: {
+                  progress: progressPercent,
+                  status: 'processing'
+                }
               }
-            }
-          )
-        } catch (error) {
-          console.error('Failed to update progress:', error)
-        }
-      })
-      .on('end', async () => {
-        try {
-          const stats = await fs.stat(outputPath)
-          const database = await db
-          await database.collection('compression_progress').updateOne(
-            { fileId },
-            {
-              $set: {
-                status: 'completed',
-                progress: 100,
-                compressedSize: stats.size,
-                endTime: new Date()
+            )
+          } catch (error) {
+            console.error('Failed to update progress:', error)
+          }
+        })
+        .on('end', async () => {
+          try {
+            console.log('FFmpeg processing finished')
+            const stats = await fs.stat(outputPath)
+            
+            await database.collection('compression_progress').updateOne(
+              { fileId },
+              {
+                $set: {
+                  status: 'completed',
+                  progress: 100,
+                  compressedSize: stats.size,
+                  endTime: new Date()
+                }
               }
-            }
-          )
-          resolve(stats.size)
-        } catch (error) {
+            )
+            resolve(stats.size)
+          } catch (error) {
+            console.error('Error in end handler:', error)
+            reject(error)
+          }
+        })
+        .on('error', async (error) => {
+          console.error('FFmpeg error:', error)
+          try {
+            await database.collection('compression_progress').updateOne(
+              { fileId },
+              {
+                $set: {
+                  status: 'error',
+                  error: error.message,
+                  endTime: new Date()
+                }
+              }
+            )
+          } catch (dbError) {
+            console.error('Failed to update error status:', dbError)
+          }
           reject(error)
-        }
-      })
-      .on('error', async (error) => {
-        try {
-          const database = await db
-          await database.collection('compression_progress').updateOne(
-            { fileId },
-            {
-              $set: {
-                status: 'error',
-                error: error.message,
-                endTime: new Date()
-              }
-            }
-          )
-        } catch (dbError) {
-          console.error('Failed to update error status:', dbError)
-        }
-        reject(error)
-      })
-      .save(outputPath)
+        })
+        .save(outputPath)
+        
+    } catch (error) {
+      console.error('Video compression setup error:', error)
+      reject(error)
+    }
   })
 }
 
