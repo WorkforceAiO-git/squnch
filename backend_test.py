@@ -14,7 +14,7 @@ import io
 import uuid
 
 # Configuration
-BASE_URL = "https://quick-squnch.preview.emergentagent.com/api"
+BASE_URL = "http://localhost:3000/api"
 TIMEOUT = 30
 
 def create_test_image(width=800, height=600, format='JPEG'):
