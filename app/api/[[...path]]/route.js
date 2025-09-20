@@ -105,48 +105,87 @@ async function compressImage(buffer, fileName, quality = 85) {
   }
 }
 
-// Video compression function
-async function compressVideo(inputPath, outputPath, fileId) {
+// Enhanced video compression function optimized for content creators
+async function compressVideo(inputPath, outputPath, fileId, originalSize) {
   return new Promise(async (resolve, reject) => {
     try {
       const database = await connectToMongo()
       
-      // Set FFmpeg path explicitly
+      // Set FFmpeg paths explicitly
       ffmpeg.setFfmpegPath('/usr/bin/ffmpeg')
       ffmpeg.setFfprobePath('/usr/bin/ffprobe')
       
-      await database.collection('compression_progress').insertOne({
-        fileId,
-        status: 'processing',
-        progress: 0,
-        startTime: new Date()
-      })
+      console.log(`Starting video compression for fileId: ${fileId}`)
+      console.log(`Input: ${inputPath}, Output: ${outputPath}`)
       
-      ffmpeg(inputPath)
+      // Initialize progress tracking
+      await database.collection('compression_progress').replaceOne(
+        { fileId },
+        {
+          fileId,
+          status: 'processing',
+          progress: 0,
+          startTime: new Date(),
+          originalSize
+        },
+        { upsert: true }
+      )
+      
+      // Content creator optimized settings for quality
+      const command = ffmpeg(inputPath)
         .videoCodec('libx264')
         .audioCodec('aac')
-        .videoBitrate('1000k')
-        .audioBitrate('128k')
         .outputOptions([
-          '-preset medium',
-          '-crf 23',
-          '-movflags +faststart',
-          '-pix_fmt yuv420p'
+          // High quality preset for content creators
+          '-preset slow',          // Better compression, slower encoding
+          '-crf 20',              // High quality (18-23 range, lower = better quality)
+          '-profile:v high',      // H.264 High Profile for better compression
+          '-level 4.1',           // Compatible with most devices
+          '-movflags +faststart', // Web streaming optimization
+          '-pix_fmt yuv420p',     // Universal compatibility
+          // Audio optimization
+          '-b:a 192k',            // Higher audio bitrate for creators
+          '-ar 48000',            // Professional audio sample rate
+          // Optimization for social media
+          '-maxrate 8000k',       // Maximum bitrate cap
+          '-bufsize 16000k',      // Buffer size for rate control
+          '-g 48',                // GOP size for seeking
+          '-keyint_min 48',       // Minimum keyframe interval
+          '-sc_threshold 0'       // Disable scene change detection
         ])
-        .on('start', (commandLine) => {
-          console.log('FFmpeg process started:', commandLine)
+      
+      // Add scaling if video is very large (optimize for web)
+      command.videoFilters([
+        'scale=\'min(1920,iw)\':\'min(1080,ih)\':force_original_aspect_ratio=decrease',
+        'pad=ceil(iw/2)*2:ceil(ih/2)*2'
+      ])
+      
+      command
+        .on('start', async (commandLine) => {
+          console.log('FFmpeg command:', commandLine)
+          try {
+            await database.collection('compression_progress').updateOne(
+              { fileId },
+              { $set: { status: 'processing', commandLine } }
+            )
+          } catch (error) {
+            console.error('Failed to update start status:', error)
+          }
         })
         .on('progress', async (progress) => {
           try {
-            const progressPercent = Math.round(progress.percent || 0)
-            console.log(`Compression progress: ${progressPercent}%`)
+            const progressPercent = Math.min(Math.round(progress.percent || 0), 99)
+            console.log(`Video compression progress: ${progressPercent}% - ${progress.currentFps || 0} fps - ${progress.currentKbps || 0} kbps`)
             
             await database.collection('compression_progress').updateOne(
               { fileId },
               {
                 $set: {
                   progress: progressPercent,
-                  status: 'processing'
+                  status: 'processing',
+                  currentFps: progress.currentFps,
+                  currentKbps: progress.currentKbps,
+                  processedTime: progress.timemark
                 }
               }
             )
@@ -156,8 +195,12 @@ async function compressVideo(inputPath, outputPath, fileId) {
         })
         .on('end', async () => {
           try {
-            console.log('FFmpeg processing finished')
+            console.log('Video compression completed successfully')
             const stats = await fs.stat(outputPath)
+            const compressedSize = stats.size
+            const compressionRatio = Math.round((1 - compressedSize / originalSize) * 100)
+            
+            console.log(`Compression results: ${originalSize} -> ${compressedSize} bytes (${compressionRatio}% reduction)`)
             
             await database.collection('compression_progress').updateOne(
               { fileId },
@@ -165,19 +208,26 @@ async function compressVideo(inputPath, outputPath, fileId) {
                 $set: {
                   status: 'completed',
                   progress: 100,
-                  compressedSize: stats.size,
-                  endTime: new Date()
+                  compressedSize,
+                  compressionRatio,
+                  endTime: new Date(),
+                  downloadUrl: `/api/download/${fileId}`
                 }
               }
             )
-            resolve(stats.size)
+            
+            resolve({
+              compressedSize,
+              compressionRatio,
+              originalSize
+            })
           } catch (error) {
-            console.error('Error in end handler:', error)
+            console.error('Error in completion handler:', error)
             reject(error)
           }
         })
         .on('error', async (error) => {
-          console.error('FFmpeg error:', error)
+          console.error('FFmpeg compression error:', error)
           try {
             await database.collection('compression_progress').updateOne(
               { fileId },
@@ -192,12 +242,40 @@ async function compressVideo(inputPath, outputPath, fileId) {
           } catch (dbError) {
             console.error('Failed to update error status:', dbError)
           }
+          
+          // Clean up files on error
+          try {
+            await fs.unlink(inputPath).catch(() => {})
+            await fs.unlink(outputPath).catch(() => {})
+          } catch (cleanupError) {
+            console.error('Cleanup error:', cleanupError)
+          }
+          
           reject(error)
         })
         .save(outputPath)
         
     } catch (error) {
       console.error('Video compression setup error:', error)
+      
+      // Update error status in database
+      try {
+        const database = await connectToMongo()
+        await database.collection('compression_progress').updateOne(
+          { fileId },
+          {
+            $set: {
+              status: 'error',
+              error: error.message,
+              endTime: new Date()
+            }
+          },
+          { upsert: true }
+        )
+      } catch (dbError) {
+        console.error('Failed to update setup error status:', dbError)
+      }
+      
       reject(error)
     }
   })
