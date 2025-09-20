@@ -1047,6 +1047,7 @@ export default function Squnch() {
                                 onClick={() => removeFile(fileObj.id)}
                                 size="sm"
                                 variant="ghost"
+                                style={{ borderRadius: '25px' }}
                               >
                                 <X className="w-4 h-4" />
                               </Button>
