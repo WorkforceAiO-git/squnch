@@ -45,6 +45,28 @@ async function ensureTempDir() {
   return tempDir
 }
 
+// Quality preset configurations
+const QUALITY_PRESETS = {
+  'high-quality': {
+    name: 'High Quality',
+    description: 'Best quality, larger files',
+    image: { quality: 95, format: 'preserve' },
+    video: { crf: 18, preset: 'slow', audioBitrate: '192k' }
+  },
+  'balanced': {
+    name: 'Balanced',
+    description: 'Great quality, good compression',
+    image: { quality: 85, format: 'smart' },
+    video: { crf: 23, preset: 'medium', audioBitrate: '128k' }
+  },
+  'maximum-compression': {
+    name: 'Maximum Compression',
+    description: 'Smallest files, good quality',
+    image: { quality: 75, format: 'smart' },
+    video: { crf: 28, preset: 'fast', audioBitrate: '96k' }
+  }
+}
+
 // Helper function to get file from multipart form data
 async function getFileFromFormData(request) {
   try {
@@ -52,13 +74,17 @@ async function getFileFromFormData(request) {
     const formData = await request.formData()
     const file = formData.get('file')
     const fileId = formData.get('fileId')
+    const qualityPreset = formData.get('qualityPreset') || 'balanced'
+    const batchId = formData.get('batchId') || null
     
     console.log('File info:', {
       hasFile: !!file,
       fileName: file?.name,
       fileSize: file?.size,
       fileType: file?.type,
-      fileId
+      fileId,
+      qualityPreset,
+      batchId
     })
     
     if (!file) {
@@ -70,53 +96,95 @@ async function getFileFromFormData(request) {
     
     console.log('Buffer created, size:', buffer.length)
 
-    return { file: buffer, fileName: file.name, fileId, mimeType: file.type }
+    return { 
+      file: buffer, 
+      fileName: file.name, 
+      fileId, 
+      mimeType: file.type, 
+      qualityPreset,
+      batchId
+    }
   } catch (error) {
     console.error('Form data parsing error:', error)
     throw new Error(`Failed to parse form data: ${error.message}`)
   }
 }
 
-// Image compression function
-async function compressImage(buffer, fileName, quality = 85) {
-  try {
-    const fileExt = path.extname(fileName).toLowerCase()
-    let compressedBuffer
+// Smart format conversion logic
+function getOptimalFormat(originalFormat, fileSize, qualityPreset) {
+  const preset = QUALITY_PRESETS[qualityPreset]
+  
+  // Only convert if format is set to 'smart'
+  if (preset.image.format !== 'smart') {
+    return originalFormat === 'image/png' ? 'png' : 'jpeg'
+  }
+  
+  // Smart conversion rules
+  if (originalFormat === 'image/png') {
+    // Convert PNG to JPEG if file is large and doesn't need transparency
+    if (fileSize > 500000) { // 500KB+
+      return 'jpeg' // Better compression for photos
+    }
+    return 'png' // Keep PNG for smaller files
+  }
+  
+  return 'jpeg' // Default to JPEG for other formats
+}
 
-    // Handle different image formats
-    if (fileExt === '.png') {
+// Enhanced image compression function with quality presets
+async function compressImage(buffer, fileName, qualityPreset = 'balanced') {
+  try {
+    const preset = QUALITY_PRESETS[qualityPreset]
+    const originalFormat = fileName.toLowerCase().includes('.png') ? 'image/png' : 'image/jpeg'
+    const optimalFormat = getOptimalFormat(originalFormat, buffer.length, qualityPreset)
+    
+    console.log(`Compressing image with ${preset.name} preset, converting to ${optimalFormat}`)
+    
+    let compressedBuffer
+    let outputFormat = optimalFormat
+
+    if (optimalFormat === 'png') {
       compressedBuffer = await sharp(buffer)
-        .png({ quality, progressive: true, compressionLevel: 9 })
-        .toBuffer()
-    } else if (fileExt === '.webp') {
-      compressedBuffer = await sharp(buffer)
-        .webp({ quality, effort: 6 })
+        .png({ 
+          quality: preset.image.quality, 
+          progressive: true, 
+          compressionLevel: 9 
+        })
         .toBuffer()
     } else {
-      // Default to JPEG for other formats
       compressedBuffer = await sharp(buffer)
-        .jpeg({ quality, progressive: true, mozjpeg: true })
+        .jpeg({ 
+          quality: preset.image.quality, 
+          progressive: true, 
+          mozjpeg: true,
+          optimiseScans: true
+        })
         .toBuffer()
     }
 
-    return compressedBuffer
+    return {
+      buffer: compressedBuffer,
+      originalFormat,
+      outputFormat,
+      formatChanged: originalFormat !== `image/${optimalFormat}`
+    }
   } catch (error) {
     throw new Error(`Image compression failed: ${error.message}`)
   }
 }
 
-// Enhanced video compression function optimized for content creators
-async function compressVideo(inputPath, outputPath, fileId, originalSize) {
+// Enhanced video compression function with quality presets
+async function compressVideo(inputPath, outputPath, fileId, originalSize, qualityPreset = 'balanced') {
   return new Promise(async (resolve, reject) => {
     try {
       const database = await connectToMongo()
+      const preset = QUALITY_PRESETS[qualityPreset]
       
       // Set FFmpeg paths explicitly
       ffmpeg.setFfmpegPath('/usr/bin/ffmpeg')
       ffmpeg.setFfprobePath('/usr/bin/ffprobe')
       
-      console.log(`Starting video compression for fileId: ${fileId}`)
-      console.log(`Input: ${inputPath}, Output: ${outputPath}`)
+      console.log(`Starting video compression with ${preset.name} preset for fileId: ${fileId}`)
       
       // Initialize progress tracking
       await database.collection('compression_progress').replaceOne(
@@ -126,59 +194,47 @@ async function compressVideo(inputPath, outputPath, fileId, originalSize) {
           status: 'processing',
           progress: 0,
           startTime: new Date(),
-          originalSize
+          originalSize,
+          qualityPreset,
+          presetName: preset.name
         },
         { upsert: true }
       )
       
-      // Content creator optimized settings for quality and size balance
+      // Enhanced settings based on quality preset
       const command = ffmpeg(inputPath)
         .videoCodec('libx264')
         .audioCodec('aac')
         .outputOptions([
-          // Optimized preset for content creators (balance of quality and size)
-          '-preset medium',        // Good balance of speed and compression
-          '-crf 24',              // Good quality with better compression (23-26 range)
-          '-profile:v high',      // H.264 High Profile for better compression
-          '-level 4.1',           // Compatible with most devices
-          '-movflags +faststart', // Web streaming optimization
-          '-pix_fmt yuv420p',     // Universal compatibility
-          // Audio optimization
-          '-b:a 128k',            // Good audio quality, smaller size
-          '-ar 44100',            // Standard audio sample rate
-          // Optimization for social media and web
-          '-maxrate 2000k',       // Reasonable maximum bitrate
-          '-bufsize 4000k',       // Buffer size for rate control
-          '-g 30',                // GOP size for web streaming
-          '-keyint_min 30',       // Minimum keyframe interval
-          '-sc_threshold 40',     // Scene change detection
-          '-threads 0'            // Use all available CPU cores
+          `-preset ${preset.video.preset}`,
+          `-crf ${preset.video.crf}`,
+          '-profile:v high',
+          '-level 4.1',
+          '-movflags +faststart',
+          '-pix_fmt yuv420p',
+          `-b:a ${preset.video.audioBitrate}`,
+          '-ar 44100',
+          '-maxrate 4000k',
+          '-bufsize 8000k',
+          '-g 30',
+          '-keyint_min 30',
+          '-sc_threshold 40',
+          '-threads 0'
         ])
       
-      // Add intelligent scaling for very large videos
+      // Intelligent scaling
       command.videoFilters([
-        // Scale down if larger than 1920x1080, maintain aspect ratio
         'scale=\'if(gt(iw,1920),1920,iw)\':\'if(gt(ih,1080),1080,ih)\':force_original_aspect_ratio=decrease',
-        // Ensure even dimensions for x264
         'pad=ceil(iw/2)*2:ceil(ih/2)*2:(ow-iw)/2:(oh-ih)/2:color=black'
       ])
       
       command
         .on('start', async (commandLine) => {
-          console.log('FFmpeg command:', commandLine)
-          try {
-            await database.collection('compression_progress').updateOne(
-              { fileId },
-              { $set: { status: 'processing', commandLine } }
-            )
-          } catch (error) {
-            console.error('Failed to update start status:', error)
-          }
+          console.log(`FFmpeg command (${preset.name}):`, commandLine)
         })
         .on('progress', async (progress) => {
           try {
             const progressPercent = Math.min(Math.round(progress.percent || 0), 99)
-            console.log(`Video compression progress: ${progressPercent}% - ${progress.currentFps || 0} fps - ${progress.currentKbps || 0} kbps`)
             
             await database.collection('compression_progress').updateOne(
               { fileId },
@@ -198,12 +254,9 @@ async function compressVideo(inputPath, outputPath, fileId, originalSize) {
         })
         .on('end', async () => {
           try {
-            console.log('Video compression completed successfully')
             const stats = await fs.stat(outputPath)
             const compressedSize = stats.size
             const compressionRatio = Math.round((1 - compressedSize / originalSize) * 100)
-            
-            console.log(`Compression results: ${originalSize} -> ${compressedSize} bytes (${compressionRatio}% reduction)`)
             
             await database.collection('compression_progress').updateOne(
               { fileId },
@@ -222,10 +275,10 @@ async function compressVideo(inputPath, outputPath, fileId, originalSize) {
             resolve({
               compressedSize,
               compressionRatio,
-              originalSize
+              originalSize,
+              qualityPreset
             })
           } catch (error) {
-            console.error('Error in completion handler:', error)
             reject(error)
           }
         })
@@ -246,7 +299,7 @@ async function compressVideo(inputPath, outputPath, fileId, originalSize) {
             console.error('Failed to update error status:', dbError)
           }
           
-          // Clean up files on error
+          // Cleanup
           try {
             await fs.unlink(inputPath).catch(() => {})
             await fs.unlink(outputPath).catch(() => {})
@@ -260,25 +313,6 @@ async function compressVideo(inputPath, outputPath, fileId, originalSize) {
         
     } catch (error) {
       console.error('Video compression setup error:', error)
-      
-      // Update error status in database
-      try {
-        const database = await connectToMongo()
-        await database.collection('compression_progress').updateOne(
-          { fileId },
-          {
-            $set: {
-              status: 'error',
-              error: error.message,
-              endTime: new Date()
-            }
-          },
-          { upsert: true }
-        )
-      } catch (dbError) {
-        console.error('Failed to update setup error status:', dbError)
-      }
-      
       reject(error)
     }
   })
@@ -298,39 +332,129 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json({ message: "Squnch API Ready" }))
     }
 
-    // Image compression endpoint
+    // Quality presets endpoint
+    if (route === '/quality-presets' && method === 'GET') {
+      return handleCORS(NextResponse.json({ presets: QUALITY_PRESETS }))
+    }
+
+    // Batch processing start endpoint
+    if (route === '/batch/start' && method === 'POST') {
+      try {
+        const body = await request.json()
+        const { fileCount, totalSize } = body
+        const batchId = uuidv4()
+        
+        await db.collection('batch_progress').insertOne({
+          batchId,
+          fileCount,
+          totalSize,
+          processedFiles: 0,
+          totalSaved: 0,
+          status: 'processing',
+          startTime: new Date(),
+          files: []
+        })
+        
+        return handleCORS(NextResponse.json({ batchId }))
+      } catch (error) {
+        return handleCORS(NextResponse.json({ error: error.message }, { status: 500 }))
+      }
+    }
+
+    // Batch progress endpoint
+    if (route.startsWith('/batch/progress/') && method === 'GET') {
+      const batchId = route.split('/').pop()
+      
+      try {
+        const batch = await db.collection('batch_progress').findOne({ batchId })
+        
+        if (!batch) {
+          return handleCORS(NextResponse.json({ error: 'Batch not found' }, { status: 404 }))
+        }
+
+        return handleCORS(NextResponse.json(batch))
+      } catch (error) {
+        return handleCORS(NextResponse.json({ error: error.message }, { status: 500 }))
+      }
+    }
+
+    // Enhanced image compression endpoint
     if (route === '/compress/image' && method === 'POST') {
       try {
-        const { file: buffer, fileName, fileId } = await getFileFromFormData(request)
+        const { file: buffer, fileName, fileId, qualityPreset, batchId } = await getFileFromFormData(request)
         
-        // Compress image
-        const compressedBuffer = await compressImage(buffer, fileName)
+        const startTime = Date.now()
+        const result = await compressImage(buffer, fileName, qualityPreset)
+        const processingTime = Date.now() - startTime
         
-        // Return compressed image
-        return handleCORS(new NextResponse(compressedBuffer, {
+        // Track analytics
+        const analytics = {
+          fileId,
+          type: 'image',
+          originalSize: buffer.length,
+          compressedSize: result.buffer.length,
+          compressionRatio: Math.round((1 - result.buffer.length / buffer.length) * 100),
+          processingTime,
+          qualityPreset,
+          originalFormat: result.originalFormat,
+          outputFormat: result.outputFormat,
+          formatChanged: result.formatChanged,
+          timestamp: new Date()
+        }
+        
+        // Store analytics
+        await db.collection('analytics').insertOne(analytics)
+        
+        // Update batch progress if part of batch
+        if (batchId) {
+          const savedBytes = buffer.length - result.buffer.length
+          await db.collection('batch_progress').updateOne(
+            { batchId },
+            {
+              $inc: { 
+                processedFiles: 1,
+                totalSaved: savedBytes > 0 ? savedBytes : 0
+              },
+              $push: {
+                files: {
+                  fileId,
+                  fileName,
+                  originalSize: buffer.length,
+                  compressedSize: result.buffer.length,
+                  saved: savedBytes,
+                  formatChanged: result.formatChanged
+                }
+              }
+            }
+          )
+        }
+        
+        const outputFileName = result.formatChanged ? 
+          fileName.replace(/\.[^/.]+$/, `.${result.outputFormat}`) : 
+          fileName
+
+        return handleCORS(new NextResponse(result.buffer, {
           status: 200,
           headers: {
             'Content-Type': 'application/octet-stream',
-            'Content-Disposition': `attachment; filename="compressed_${fileName}"`,
-            'Content-Length': compressedBuffer.length.toString()
+            'Content-Disposition': `attachment; filename="compressed_${outputFileName}"`,
+            'Content-Length': result.buffer.length.toString(),
+            'X-Original-Size': buffer.length.toString(),
+            'X-Compression-Ratio': analytics.compressionRatio.toString(),
+            'X-Format-Changed': result.formatChanged.toString(),
+            'X-Processing-Time': processingTime.toString()
           }
         }))
       } catch (error) {
         console.error('Image compression error:', error)
-        return handleCORS(NextResponse.json(
-          { error: error.message },
-          { status: 500 }
-        ))
+        return handleCORS(NextResponse.json({ error: error.message }, { status: 500 }))
       }
     }
 
-    // Video compression endpoint
+    // Enhanced video compression endpoint
     if (route === '/compress/video' && method === 'POST') {
       try {
-        console.log('Video compression endpoint called')
-        const { file: buffer, fileName, fileId } = await getFileFromFormData(request)
-        
-        console.log(`Processing video: ${fileName}, size: ${buffer.length} bytes, fileId: ${fileId}`)
+        const { file: buffer, fileName, fileId, qualityPreset, batchId } = await getFileFromFormData(request)
         
         const tempDir = await ensureTempDir()
         const fileExt = path.extname(fileName).toLowerCase()
@@ -339,30 +463,55 @@ async function handleRoute(request, { params }) {
         
         // Write input file
         await fs.writeFile(inputPath, buffer)
-        console.log(`Input file written to: ${inputPath}`)
         
-        // Start compression with enhanced function
-        compressVideo(inputPath, outputPath, fileId, buffer.length)
+        // Start compression with quality preset
+        compressVideo(inputPath, outputPath, fileId, buffer.length, qualityPreset)
           .then(async (result) => {
-            console.log('Video compression completed:', result)
-            // Input file cleanup is handled in the compression function
+            // Store analytics
+            await db.collection('analytics').insertOne({
+              fileId,
+              type: 'video',
+              originalSize: result.originalSize,
+              compressedSize: result.compressedSize,
+              compressionRatio: result.compressionRatio,
+              qualityPreset: result.qualityPreset,
+              timestamp: new Date()
+            })
+            
+            // Update batch progress if part of batch
+            if (batchId) {
+              const savedBytes = result.originalSize - result.compressedSize
+              await db.collection('batch_progress').updateOne(
+                { batchId },
+                {
+                  $inc: { 
+                    processedFiles: 1,
+                    totalSaved: savedBytes > 0 ? savedBytes : 0
+                  },
+                  $push: {
+                    files: {
+                      fileId,
+                      fileName,
+                      originalSize: result.originalSize,
+                      compressedSize: result.compressedSize,
+                      saved: savedBytes
+                    }
+                  }
+                }
+              )
+            }
           })
-          .catch(async (error) => {
-            console.error('Video compression failed:', error)
-            // Cleanup is handled in the compression function
-          })
+          .catch(console.error)
         
         return handleCORS(NextResponse.json({ 
           message: 'Video compression started',
           fileId,
-          originalSize: buffer.length
+          originalSize: buffer.length,
+          qualityPreset
         }))
       } catch (error) {
         console.error('Video compression endpoint error:', error)
-        return handleCORS(NextResponse.json(
-          { error: error.message },
-          { status: 500 }
-        ))
+        return handleCORS(NextResponse.json({ error: error.message }, { status: 500 }))
       }
     }
 
@@ -374,19 +523,47 @@ async function handleRoute(request, { params }) {
         const progress = await db.collection('compression_progress').findOne({ fileId })
         
         if (!progress) {
-          return handleCORS(NextResponse.json(
-            { error: 'Progress not found' },
-            { status: 404 }
-          ))
+          return handleCORS(NextResponse.json({ error: 'Progress not found' }, { status: 404 }))
         }
 
         return handleCORS(NextResponse.json(progress))
       } catch (error) {
         console.error('Progress check error:', error)
-        return handleCORS(NextResponse.json(
-          { error: error.message },
-          { status: 500 }
-        ))
+        return handleCORS(NextResponse.json({ error: error.message }, { status: 500 }))
+      }
+    }
+
+    // Analytics endpoint
+    if (route === '/analytics/summary' && method === 'GET') {
+      try {
+        const analytics = await db.collection('analytics').aggregate([
+          {
+            $group: {
+              _id: null,
+              totalFiles: { $sum: 1 },
+              totalOriginalSize: { $sum: '$originalSize' },
+              totalCompressedSize: { $sum: '$compressedSize' },
+              averageCompressionRatio: { $avg: '$compressionRatio' },
+              totalSpaceSaved: { $sum: { $subtract: ['$originalSize', '$compressedSize'] } },
+              imageFiles: { $sum: { $cond: [{ $eq: ['$type', 'image'] }, 1, 0] } },
+              videoFiles: { $sum: { $cond: [{ $eq: ['$type', 'video'] }, 1, 0] } }
+            }
+          }
+        ]).toArray()
+
+        const summary = analytics[0] || {
+          totalFiles: 0,
+          totalOriginalSize: 0,
+          totalCompressedSize: 0,
+          averageCompressionRatio: 0,
+          totalSpaceSaved: 0,
+          imageFiles: 0,
+          videoFiles: 0
+        }
+
+        return handleCORS(NextResponse.json(summary))
+      } catch (error) {
+        return handleCORS(NextResponse.json({ error: error.message }, { status: 500 }))
       }
     }
 
@@ -395,44 +572,26 @@ async function handleRoute(request, { params }) {
       const fileId = route.split('/').pop()
       
       try {
-        console.log(`Download request for fileId: ${fileId}`)
         const progress = await db.collection('compression_progress').findOne({ fileId })
         
-        if (!progress) {
-          console.log(`Progress not found for fileId: ${fileId}`)
+        if (!progress || progress.status !== 'completed') {
           return handleCORS(NextResponse.json(
-            { error: 'File not found' },
-            { status: 404 }
-          ))
-        }
-
-        if (progress.status !== 'completed') {
-          console.log(`File not ready for download, status: ${progress.status}`)
-          return handleCORS(NextResponse.json(
-            { error: `File not ready for download. Status: ${progress.status}` },
+            { error: `File not ready for download. Status: ${progress?.status || 'not found'}` },
             { status: 404 }
           ))
         }
 
         const tempDir = await ensureTempDir()
-        
-        // Look for output file with .mp4 extension (standardized output)
         const outputPath = path.join(tempDir, `output_${fileId}.mp4`)
         
         try {
           await fs.access(outputPath)
         } catch {
-          console.log(`Output file not found: ${outputPath}`)
-          return handleCORS(NextResponse.json(
-            { error: 'Compressed file not found' },
-            { status: 404 }
-          ))
+          return handleCORS(NextResponse.json({ error: 'Compressed file not found' }, { status: 404 }))
         }
 
         const fileBuffer = await fs.readFile(outputPath)
-        console.log(`Serving compressed video: ${fileBuffer.length} bytes`)
         
-        // Clean up file after successful read (but keep it for a few minutes for multiple downloads)
         setTimeout(() => {
           fs.unlink(outputPath).catch(console.error)
         }, 5 * 60 * 1000) // 5 minutes delay
@@ -444,30 +603,24 @@ async function handleRoute(request, { params }) {
           headers: {
             'Content-Type': 'video/mp4',
             'Content-Disposition': `attachment; filename="${fileName}"`,
-            'Content-Length': fileBuffer.length.toString()
+            'Content-Length': fileBuffer.length.toString(),
+            'X-Original-Size': progress.originalSize?.toString() || '0',
+            'X-Compression-Ratio': progress.compressionRatio?.toString() || '0',
+            'X-Quality-Preset': progress.qualityPreset || 'balanced'
           }
         }))
       } catch (error) {
         console.error('Download error:', error)
-        return handleCORS(NextResponse.json(
-          { error: error.message },
-          { status: 500 }
-        ))
+        return handleCORS(NextResponse.json({ error: error.message }, { status: 500 }))
       }
     }
 
     // Route not found
-    return handleCORS(NextResponse.json(
-      { error: `Route ${route} not found` },
-      { status: 404 }
-    ))
+    return handleCORS(NextResponse.json({ error: `Route ${route} not found` }, { status: 404 }))
 
   } catch (error) {
     console.error('API Error:', error)
-    return handleCORS(NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    ))
+    return handleCORS(NextResponse.json({ error: "Internal server error" }, { status: 500 }))
   }
 }
 
