@@ -974,7 +974,7 @@ export default function Squnch() {
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-2xl font-bold text-gray-900">Processing Files</h3>
                     {completedFiles > 0 && (
-                      <Button onClick={clearCompleted} variant="outline" size="sm" style={{ borderRadius: '25px' }}>
+                      <Button onClick={clearCompleted} variant="outline" size="sm" style={{ borderRadius: '15px' }}>
                         Clear Completed
                       </Button>
                     )}
