@@ -131,33 +131,36 @@ async function compressVideo(inputPath, outputPath, fileId, originalSize) {
         { upsert: true }
       )
       
-      // Content creator optimized settings for quality
+      // Content creator optimized settings for quality and size balance
       const command = ffmpeg(inputPath)
         .videoCodec('libx264')
         .audioCodec('aac')
         .outputOptions([
-          // High quality preset for content creators
-          '-preset slow',          // Better compression, slower encoding
-          '-crf 20',              // High quality (18-23 range, lower = better quality)
+          // Optimized preset for content creators (balance of quality and size)
+          '-preset medium',        // Good balance of speed and compression
+          '-crf 24',              // Good quality with better compression (23-26 range)
           '-profile:v high',      // H.264 High Profile for better compression
           '-level 4.1',           // Compatible with most devices
           '-movflags +faststart', // Web streaming optimization
           '-pix_fmt yuv420p',     // Universal compatibility
           // Audio optimization
-          '-b:a 192k',            // Higher audio bitrate for creators
-          '-ar 48000',            // Professional audio sample rate
-          // Optimization for social media
-          '-maxrate 8000k',       // Maximum bitrate cap
-          '-bufsize 16000k',      // Buffer size for rate control
-          '-g 48',                // GOP size for seeking
-          '-keyint_min 48',       // Minimum keyframe interval
-          '-sc_threshold 0'       // Disable scene change detection
+          '-b:a 128k',            // Good audio quality, smaller size
+          '-ar 44100',            // Standard audio sample rate
+          // Optimization for social media and web
+          '-maxrate 2000k',       // Reasonable maximum bitrate
+          '-bufsize 4000k',       // Buffer size for rate control
+          '-g 30',                // GOP size for web streaming
+          '-keyint_min 30',       // Minimum keyframe interval
+          '-sc_threshold 40',     // Scene change detection
+          '-threads 0'            // Use all available CPU cores
         ])
       
-      // Add scaling if video is very large (optimize for web)
+      // Add intelligent scaling for very large videos
       command.videoFilters([
-        'scale=\'min(1920,iw)\':\'min(1080,ih)\':force_original_aspect_ratio=decrease',
-        'pad=ceil(iw/2)*2:ceil(ih/2)*2'
+        // Scale down if larger than 1920x1080, maintain aspect ratio
+        'scale=\'if(gt(iw,1920),1920,iw)\':\'if(gt(ih,1080),1080,ih)\':force_original_aspect_ratio=decrease',
+        // Ensure even dimensions for x264
+        'pad=ceil(iw/2)*2:ceil(ih/2)*2:(ow-iw)/2:(oh-ih)/2:color=black'
       ])
       
       command
