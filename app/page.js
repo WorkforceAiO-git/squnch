@@ -514,11 +514,13 @@ export default function Squnch() {
 
           {/* Hero Section */}
           <section className="py-32 px-6 relative z-10">
-            <div className="container mx-auto max-w-4xl text-center">
-              <h1 className="text-7xl md:text-8xl font-black text-gray-900 mb-8 leading-none tracking-tight">
+            <div className="container mx-auto max-w-6xl text-center">
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-black text-gray-900 mb-4 leading-tight tracking-tight whitespace-nowrap">
                 Your files are too big
-                <span className="block text-primary">We'll fix that.</span>
               </h1>
+              <h2 className="text-5xl md:text-6xl lg:text-7xl font-black text-primary mb-12 leading-tight tracking-tight whitespace-nowrap">
+                We'll fix that.
+              </h2>
               <Button 
                 size="lg" 
                 className="bg-black hover:bg-gray-800 text-white text-xl px-12 py-8 font-bold text-lg"
