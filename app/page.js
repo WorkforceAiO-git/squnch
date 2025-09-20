@@ -801,7 +801,7 @@ export default function Squnch() {
                 <strong>iOS and Android apps</strong><br />
                 Same compression power, designed for mobile.
               </p>
-              <Button variant="outline" size="lg" className="border-2 border-primary text-primary hover:bg-primary hover:text-white font-bold">
+              <Button variant="outline" size="lg" className="border-2 border-primary text-primary hover:bg-primary hover:text-white font-bold" style={{ borderRadius: '25px' }}>
                 Get notified
               </Button>
             </div>
