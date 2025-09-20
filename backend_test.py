@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend API Testing for Squnch File Compression Application
-Tests all compression endpoints, progress tracking, and download functionality
+Comprehensive Backend Testing for Squnch Advanced Features
+Testing all new "lovable" features that make Squnch special
 """
 
 import requests
@@ -14,14 +14,7 @@ import io
 import uuid
 
 # Configuration
-import os
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
-
-# Use localhost for testing since external URL has ingress issues
-BASE_URL = "http://localhost:3000/api"
+BASE_URL = "https://quick-squnch.preview.emergentagent.com/api"
 TIMEOUT = 30
 
 class SqunchAPITester:
