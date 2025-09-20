@@ -677,7 +677,7 @@ export default function Squnch() {
                 <Card className="p-8 border-2 border-primary rounded-3xl bg-white">
                   <CardHeader className="text-center pb-4">
                     <CardTitle className="text-3xl font-black">Squnch Lifetime Access</CardTitle>
-                    <div className="text-6xl font-black text-primary mt-4">$99.99</div>
+                    <div className="text-6xl font-black text-primary mt-4">$29.99</div>
                     <p className="text-gray-600 text-lg">Buy once, compress forever</p>
                   </CardHeader>
                   <CardContent>
