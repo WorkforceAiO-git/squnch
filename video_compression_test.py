@@ -13,7 +13,7 @@ import subprocess
 from pathlib import Path
 
 # Configuration
-BASE_URL = "https://quick-squnch.preview.emergentagent.com/api"
+BASE_URL = "http://localhost:3000/api"
 TIMEOUT = 60  # Increased timeout for video processing
 MAX_WAIT_TIME = 120  # Maximum time to wait for compression completion
 
