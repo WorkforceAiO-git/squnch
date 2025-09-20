@@ -48,9 +48,18 @@ async function ensureTempDir() {
 // Helper function to get file from multipart form data
 async function getFileFromFormData(request) {
   try {
+    console.log('Parsing form data...')
     const formData = await request.formData()
     const file = formData.get('file')
     const fileId = formData.get('fileId')
+    
+    console.log('File info:', {
+      hasFile: !!file,
+      fileName: file?.name,
+      fileSize: file?.size,
+      fileType: file?.type,
+      fileId
+    })
     
     if (!file) {
       throw new Error('No file provided')
@@ -58,9 +67,12 @@ async function getFileFromFormData(request) {
 
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
+    
+    console.log('Buffer created, size:', buffer.length)
 
     return { file: buffer, fileName: file.name, fileId, mimeType: file.type }
   } catch (error) {
+    console.error('Form data parsing error:', error)
     throw new Error(`Failed to parse form data: ${error.message}`)
   }
 }
