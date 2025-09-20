@@ -265,7 +265,7 @@ class SqunchAPITester:
     def test_cors_headers(self):
         """Test CORS headers are properly set"""
         try:
-            response = self.session.get(f"{BASE_URL}/", timeout=TIMEOUT)
+            response = self.session.get(f"{BASE_URL}", timeout=TIMEOUT)
             
             cors_headers = {
                 'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
