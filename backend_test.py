@@ -14,7 +14,13 @@ import io
 import uuid
 
 # Configuration
-BASE_URL = "http://localhost:3000/api"
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+BASE_URL = f"{os.getenv('NEXT_PUBLIC_BASE_URL', 'http://localhost:3000')}/api"
 TIMEOUT = 30
 
 class SqunchAPITester:
