@@ -476,7 +476,7 @@ export default function Squnch() {
             <Button 
               onClick={() => { setShowCompressor(true); setActiveTab('compress'); }}
               className="bg-primary hover:bg-primary/90"
-              style={{ borderRadius: '25px' }}
+              style={{ borderRadius: '15px' }}
             >
               Get Squnch
             </Button>
