@@ -468,7 +468,8 @@ export default function Squnch() {
         </div>
       </header>
 
-      <TabsContent value="compress" className="mt-0">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
+        <TabsContent value="compress" className="mt-0">
         {/* Hero Section */}
         <section className="py-16 px-6 bg-gradient-to-br from-blue-50 to-purple-50">
           <div className="container mx-auto max-w-4xl text-center">
