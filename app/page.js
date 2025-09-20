@@ -1037,6 +1037,7 @@ export default function Squnch() {
                                   onClick={() => downloadFile(fileObj)}
                                   size="sm"
                                   variant="outline"
+                                  style={{ borderRadius: '25px' }}
                                 >
                                   <Download className="w-4 h-4 mr-2" />
                                   Download
