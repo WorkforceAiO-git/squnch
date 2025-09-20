@@ -716,7 +716,7 @@ export default function Squnch() {
                     </div>
                     <Button 
                       className="w-full bg-black hover:bg-gray-800 text-white text-xl py-6 font-bold mb-4"
-                      style={{ borderRadius: '25px' }}
+                      style={{ borderRadius: '15px' }}
                       onClick={() => { setShowCompressor(true); setActiveTab('compress'); }}
                     >
                       Get Squnch
