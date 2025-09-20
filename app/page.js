@@ -789,6 +789,7 @@ export default function Squnch() {
           </div>
         </section>
       </TabsContent>
+      </Tabs>
 
       {/* Footer */}
       <footer className="py-12 px-6 bg-white border-t">
