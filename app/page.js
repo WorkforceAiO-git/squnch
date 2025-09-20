@@ -520,7 +520,8 @@ export default function Squnch() {
               </h1>
               <Button 
                 size="lg" 
-                className="bg-black hover:bg-gray-800 text-white text-xl px-12 py-8 rounded-none font-bold text-lg"
+                className="bg-black hover:bg-gray-800 text-white text-xl px-12 py-8 font-bold text-lg"
+                style={{ borderRadius: '25px' }}
                 onClick={() => { setShowCompressor(true); setActiveTab('compress'); }}
               >
                 Squnch my files
