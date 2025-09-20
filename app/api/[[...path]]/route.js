@@ -392,41 +392,54 @@ async function handleRoute(request, { params }) {
       const fileId = route.split('/').pop()
       
       try {
+        console.log(`Download request for fileId: ${fileId}`)
         const progress = await db.collection('compression_progress').findOne({ fileId })
         
-        if (!progress || progress.status !== 'completed') {
+        if (!progress) {
+          console.log(`Progress not found for fileId: ${fileId}`)
           return handleCORS(NextResponse.json(
-            { error: 'File not ready for download' },
+            { error: 'File not found' },
+            { status: 404 }
+          ))
+        }
+
+        if (progress.status !== 'completed') {
+          console.log(`File not ready for download, status: ${progress.status}`)
+          return handleCORS(NextResponse.json(
+            { error: `File not ready for download. Status: ${progress.status}` },
             { status: 404 }
           ))
         }
 
         const tempDir = await ensureTempDir()
-        const outputPath = path.join(tempDir, `output_${fileId}_*`)
         
-        // Find the output file (since we don't store the exact filename)
-        const files = await fs.readdir(tempDir)
-        const outputFile = files.find(f => f.startsWith(`output_${fileId}_`))
+        // Look for output file with .mp4 extension (standardized output)
+        const outputPath = path.join(tempDir, `output_${fileId}.mp4`)
         
-        if (!outputFile) {
+        try {
+          await fs.access(outputPath)
+        } catch {
+          console.log(`Output file not found: ${outputPath}`)
           return handleCORS(NextResponse.json(
             { error: 'Compressed file not found' },
             { status: 404 }
           ))
         }
 
-        const filePath = path.join(tempDir, outputFile)
-        const fileBuffer = await fs.readFile(filePath)
+        const fileBuffer = await fs.readFile(outputPath)
+        console.log(`Serving compressed video: ${fileBuffer.length} bytes`)
         
-        // Clean up file after sending
-        fs.unlink(filePath).catch(console.error)
+        // Clean up file after successful read (but keep it for a few minutes for multiple downloads)
+        setTimeout(() => {
+          fs.unlink(outputPath).catch(console.error)
+        }, 5 * 60 * 1000) // 5 minutes delay
         
-        const fileName = outputFile.replace(`output_${fileId}_`, 'compressed_')
+        const fileName = `compressed_video_${fileId}.mp4`
         
         return handleCORS(new NextResponse(fileBuffer, {
           status: 200,
           headers: {
-            'Content-Type': 'application/octet-stream',
+            'Content-Type': 'video/mp4',
             'Content-Disposition': `attachment; filename="${fileName}"`,
             'Content-Length': fileBuffer.length.toString()
           }
