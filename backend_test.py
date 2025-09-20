@@ -45,11 +45,15 @@ class SqunchAPITester:
         return buffer.getvalue()
     
     def create_test_video(self):
-        """Create a small test video file (mock - using a small binary file)"""
-        # Since we can't easily create a real video file, we'll use a small binary file
-        # that mimics video data for testing purposes
-        video_data = b'\x00\x00\x00\x20ftypmp42\x00\x00\x00\x00mp42isom' + b'\x00' * 1000
-        return video_data
+        """Create a small test video file"""
+        try:
+            # Read the real test video file we created
+            with open('/tmp/test_video.mp4', 'rb') as f:
+                return f.read()
+        except FileNotFoundError:
+            # Fallback to mock data if file doesn't exist
+            video_data = b'\x00\x00\x00\x20ftypmp42\x00\x00\x00\x00mp42isom' + b'\x00' * 1000
+            return video_data
     
     def test_api_root(self):
         """Test GET /api endpoint"""
