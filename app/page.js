@@ -515,149 +515,131 @@ export default function Squnch() {
           <section className="py-32 px-6 relative z-10">
             <div className="container mx-auto max-w-4xl text-center">
               <h1 className="text-7xl md:text-8xl font-black text-gray-900 mb-8 leading-none tracking-tight">
-                Go from big files
-                <span className="block text-primary">to small ones.</span>
+                Your files are too big
+                <span className="block text-primary">We'll fix that.</span>
               </h1>
-              <p className="text-2xl text-gray-700 mb-12 max-w-3xl mx-auto font-medium">
-                Anyone can compress their files online. Just start with what you have,
-                <br />see what shrinks, and get paid in storage space. It's that easy.
-              </p>
               <Button 
                 size="lg" 
                 className="bg-black hover:bg-gray-800 text-white text-xl px-12 py-8 rounded-none font-bold text-lg"
                 onClick={() => { setShowCompressor(true); setActiveTab('compress'); }}
               >
-                Start compressing
+                Squnch my files
               </Button>
-              
-              <div className="mt-8">
-                <p className="text-gray-600">
-                  Compress a file for <Button variant="link" className="text-primary p-0 font-semibold">free</Button>
-                </p>
-              </div>
             </div>
           </section>
 
-          {/* Feature Cards - Gumroad Style */}
+          {/* Core Benefits - 3 Column Grid */}
           <section className="py-20 px-6 relative z-10">
-            <div className="container mx-auto max-w-7xl">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
-                {/* Compress Everything Card */}
-                <Card className="p-8 bg-blue-50 border-0 rounded-3xl">
-                  <div className="flex items-start space-x-4 mb-6">
-                    <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
-                      <Zap className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-3xl font-black text-gray-900">Compress everything</h3>
+            <div className="container mx-auto max-w-6xl">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Zap className="w-8 h-8 text-blue-600" />
                   </div>
-                  <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                    Videos become smaller. Monthly subscriptions.
-                    Whatever Squnch was created to help you
-                    experiment with all kinds of ideas and formats.
+                  <h3 className="text-2xl font-bold mb-4">Compress Everything</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    From images and videos to formats you didn't even know existed, Squnch handles it all. Our smart algorithms automatically pick the best method for each file, so you don't have to tweak settings or guess. Just upload, compress, and get smaller files every time.
                   </p>
-                  <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <div className="flex items-center space-x-3 mb-3">
-                      <div className="w-8 h-8 bg-green-500 rounded-full"></div>
-                      <span className="font-semibold">847MB → 156MB</span>
-                    </div>
-                    <div className="flex items-center space-x-3 mb-3">
-                      <div className="w-8 h-8 bg-purple-500 rounded-full"></div>
-                      <span className="font-semibold">200 photos in 3 minutes</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-blue-500 rounded-full"></div>
-                      <span className="font-semibold">PNG→JPEG: 94% saved</span>
-                    </div>
-                  </div>
-                </Card>
-
-                {/* Make Your Own Road Card */}
-                <Card className="p-8 bg-green-50 border-0 rounded-3xl">
-                  <div className="flex items-start space-x-4 mb-6">
-                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
-                      <Star className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-3xl font-black text-gray-900">Make your own road</h3>
-                  </div>
-                  <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                    Whether you need more balance,
-                    flexibility, or just a different gig, we
-                    make it easy to chart a new path.
-                  </p>
-                  <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold">481</span>
-                        <span className="text-2xl font-bold">$201,083</span>
-                      </div>
-                      <div className="text-sm text-gray-600">Sales • Total</div>
-                      <div className="h-16 bg-gradient-to-r from-green-200 to-green-400 rounded-lg flex items-end justify-center">
-                        <div className="w-full h-12 bg-green-500 rounded-lg relative">
-                          <div className="absolute inset-0 bg-gradient-to-t from-green-600 to-green-400 rounded-lg"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-
-              {/* CTA Section */}
-              <div className="text-center mb-20">
-                <h2 className="text-5xl font-black text-gray-900 mb-4">
-                  You know all those great files you have?
-                </h2>
-                <div className="w-full max-w-2xl mx-auto bg-yellow-400 rounded-full py-8 px-8 mb-8">
-                  <div className="flex items-center justify-center space-x-4">
-                    <div className="w-16 h-16 bg-pink-500 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold text-2xl">S</span>
-                    </div>
-                    <span className="text-2xl font-bold text-gray-900">We want you to try them. lots of them.</span>
-                  </div>
                 </div>
-                <p className="text-xl text-gray-700 mb-8">
-                  and find out what works.
-                </p>
-                <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-                  Start with one file. See what sticks. Build on what works. All for free in about 10 seconds.
-                </p>
+                
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <TrendingUp className="w-8 h-8 text-green-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-4">Save Space, Save Money</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Reclaim valuable storage without deleting memories or paying for endless cloud upgrades. Squnch frees up gigs on your device, letting you keep everything that matters. Stop renting more space—shrink what you already own.
+                  </p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Star className="w-8 h-8 text-purple-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-4">Keep Quality Intact</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Your work deserves more than grainy photos or glitchy videos. Squnch preserves sharp visuals and smooth playback while still cutting file sizes down dramatically. You get all the savings, without the compromise.
+                  </p>
+                </div>
               </div>
             </div>
           </section>
 
-          {/* Social Proof Banner */}
-          <section className="py-16 px-6 bg-black text-white relative z-10">
-            <div className="container mx-auto max-w-6xl text-center">
-              <h2 className="text-6xl font-black mb-8">$2,007,671</h2>
-              <p className="text-2xl mb-8">
-                Bytes of space savings in the first year<br />
-                Saved 9% of billions more than $1.5 billion of data cleaned
+          {/* Value Proposition Shift */}
+          <section className="py-20 px-6 bg-gray-50 relative z-10">
+            <div className="container mx-auto max-w-4xl text-center">
+              <h2 className="text-5xl font-black text-gray-900 mb-4">
+                Instead of buying storage...
+              </h2>
+              <h2 className="text-5xl font-black text-primary mb-8">
+                ...start compressing files!
+              </h2>
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                You don't have to delete memories or upgrade plans. You just gotta take what you have and make it smaller.
               </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-                <Card className="p-6 bg-white text-black">
-                  <div className="flex items-start space-x-4">
+            </div>
+          </section>
+
+          {/* Customer Stories */}
+          <section className="py-20 px-6 relative z-10">
+            <div className="container mx-auto max-w-6xl">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <Card className="p-8 bg-white rounded-3xl shadow-sm">
+                  <blockquote className="text-lg text-gray-700 mb-6">
+                    "I launched my photo portfolio as a side project; but within 2 months Squnch helped me compress 50GB down to 8GB. This tool enabled me to share my work faster, save on hosting costs, and finally organize my massive photo library."
+                  </blockquote>
+                  <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                       <span className="font-bold text-blue-600">SK</span>
                     </div>
-                    <div className="text-left">
-                      <p className="mb-2">
-                        "I launched my photo portfolio as a side project; but within 2 months Squnch helped me compress 50GB down to 8GB. This tool enabled me to share my work faster..."
-                      </p>
-                      <div className="text-sm text-gray-600">Sarah K • Photo portfolios</div>
+                    <div>
+                      <div className="font-semibold">Sarah K</div>
+                      <div className="text-sm text-gray-600">Compresses photo portfolios</div>
                     </div>
                   </div>
                 </Card>
 
-                <Card className="p-6 bg-white text-black">
-                  <div className="flex items-start space-x-4">
+                <Card className="p-8 bg-white rounded-3xl shadow-sm">
+                  <blockquote className="text-lg text-gray-700 mb-6">
+                    "For years, I struggled with video file sizes eating up my storage. Last month, I started using Squnch and have freed up 15GB+ while keeping perfect quality on content I actually care about."
+                  </blockquote>
+                  <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                       <span className="font-bold text-green-600">MR</span>
                     </div>
-                    <div className="text-left">
-                      <p className="mb-2">
-                        "For years, I struggled with video file sizes eating up my storage. Last month, I started using Squnch and have freed up 15GB+ while keeping perfect quality..."
-                      </p>
-                      <div className="text-sm text-gray-600">Mike R • Content tutorials</div>
+                    <div>
+                      <div className="font-semibold">Mike R</div>
+                      <div className="text-sm text-gray-600">Compresses content tutorials</div>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="p-8 bg-white rounded-3xl shadow-sm">
+                  <blockquote className="text-lg text-gray-700 mb-6">
+                    "Originally, I was paying for cloud storage upgrades every few months. But with Squnch, I compressed my entire video library and got my storage back. Today, 99% of my files are optimized and I haven't bought storage since."
+                  </blockquote>
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                      <span className="font-bold text-purple-600">JL</span>
+                    </div>
+                    <div>
+                      <div className="font-semibold">Jessica L</div>
+                      <div className="text-sm text-gray-600">Compresses business content</div>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="p-8 bg-white rounded-3xl shadow-sm">
+                  <blockquote className="text-lg text-gray-700 mb-6">
+                    "I love Squnch because it can't be any simpler. I upload a file, watch it compress, and download the smaller version. The space I save goes directly back to my device every time."
+                  </blockquote>
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                      <span className="font-bold text-yellow-600">DP</span>
+                    </div>
+                    <div>
+                      <div className="font-semibold">David P</div>
+                      <div className="text-sm text-gray-600">Compresses everything</div>
                     </div>
                   </div>
                 </Card>
@@ -665,107 +647,30 @@ export default function Squnch() {
             </div>
           </section>
 
-          {/* Unlimited Possibilities */}
-          <section className="py-20 px-6 relative z-10">
-            <div className="container mx-auto max-w-6xl text-center">
-              <h2 className="text-5xl font-black text-gray-900 mb-4">Unlimited possibilities</h2>
-              <p className="text-xl text-gray-600 mb-12">
-                All the file formats, analysis tools, and sharing to everyone for free.
-              </p>
-
-              <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-16">
-                {[
-                  { name: 'Images', color: 'bg-blue-100 text-blue-700' },
-                  { name: 'Videos', color: 'bg-purple-100 text-purple-700' },
-                  { name: 'JPEG', color: 'bg-green-100 text-green-700' },
-                  { name: 'PNG', color: 'bg-yellow-100 text-yellow-700' },
-                  { name: 'MP4', color: 'bg-red-100 text-red-700' },
-                  { name: 'MOV', color: 'bg-indigo-100 text-indigo-700' },
-                  { name: 'HEIC', color: 'bg-pink-100 text-pink-700' },
-                  { name: 'WEBP', color: 'bg-cyan-100 text-cyan-700' },
-                  { name: 'AVI', color: 'bg-orange-100 text-orange-700' },
-                  { name: 'MKV', color: 'bg-emerald-100 text-emerald-700' },
-                  { name: 'TIFF', color: 'bg-violet-100 text-violet-700' },
-                  { name: 'GIF', color: 'bg-rose-100 text-rose-700' }
-                ].map((format, index) => (
-                  <div key={index} className={`${format.color} px-4 py-2 rounded-full text-sm font-semibold`}>
-                    {format.name}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* Don't Take Risks Section */}
-          <section className="py-20 px-6 bg-gray-50 relative z-10">
-            <div className="container mx-auto max-w-6xl">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div>
-                  <h2 className="text-5xl font-black text-gray-900 mb-6">
-                    Don't take risks.<br />
-                    That's boring.
-                  </h2>
-                  <div className="bg-yellow-400 rounded-2xl p-8 mb-8">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-16 h-16 bg-yellow-600 rounded-full flex items-center justify-center">
-                        <span className="text-white font-bold text-2xl">$</span>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-gray-900">2 millions files compressed</div>
-                        <div className="text-gray-700">More space gets created</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h2 className="text-5xl font-black text-gray-900 mb-6">
-                    Place small bets.<br />
-                    That's exciting!
-                  </h2>
-                  <Card className="p-8 bg-white">
-                    <div className="space-y-4">
-                      <div className="text-4xl font-bold text-green-600">94%</div>
-                      <div className="text-lg text-gray-700">
-                        Smart PNG→JPEG conversion achieving incredible compression ratios
-                      </div>
-                      <div className="bg-green-100 rounded-lg p-4">
-                        <div className="text-sm text-green-700">
-                          ✨ Format optimization • 🎯 Quality presets • 📦 Batch processing
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Final CTA */}
-          <section className="py-20 px-6 relative z-10">
+          {/* Social Proof Section */}
+          <section className="py-16 px-6 bg-gray-50 relative z-10">
             <div className="container mx-auto max-w-4xl text-center">
-              <h2 className="text-6xl font-black text-gray-900 mb-6">
-                Share your work.<br />
-                The world needs it.
-              </h2>
-              <Button 
-                size="lg"
-                className="bg-black hover:bg-gray-800 text-white text-xl px-12 py-8 rounded-none font-bold"
-                onClick={() => { setShowCompressor(true); setActiveTab('compress'); }}
-              >
-                Start now
-              </Button>
+              <h2 className="text-4xl font-black mb-8">Discover the best compression results from Squnch users</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white p-6 rounded-2xl shadow-sm">
+                  <div className="text-3xl font-black text-green-600 mb-2">81% savings</div>
+                  <p className="text-gray-600">Reduced 847MB video to 156MB</p>
+                </div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm">
+                  <div className="text-3xl font-black text-blue-600 mb-2">2.3GB saved</div>
+                  <p className="text-gray-600">Compressed 200 photos in 3 minutes</p>
+                </div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm">
+                  <div className="text-3xl font-black text-purple-600 mb-2">94% reduction</div>
+                  <p className="text-gray-600">Smart PNG→JPEG conversion</p>
+                </div>
+              </div>
             </div>
           </section>
 
-          {/* Pricing */}
-          <section className="py-20 px-6 bg-gray-50 relative z-10">
+          {/* Pricing Section */}
+          <section className="py-20 px-6 relative z-10">
             <div className="container mx-auto max-w-4xl">
-              <div className="text-center mb-12">
-                <h2 className="text-5xl font-black mb-4">Simple, honest pricing</h2>
-                <p className="text-xl text-gray-600">Buy once, compress forever</p>
-              </div>
-              
               <div className="max-w-md mx-auto">
                 <Card className="p-8 border-2 border-primary rounded-3xl bg-white">
                   <CardHeader className="text-center pb-4">
@@ -774,46 +679,129 @@ export default function Squnch() {
                     <p className="text-gray-600 text-lg">Buy once, compress forever</p>
                   </CardHeader>
                   <CardContent>
-                    <ul className="space-y-3 mb-8">
-                      <li className="flex items-center space-x-3">
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                        <span>Unlimited file compression</span>
-                      </li>
-                      <li className="flex items-center space-x-3">
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                        <span>All formats supported</span>
-                      </li>
-                      <li className="flex items-center space-x-3">
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                        <span>Web + mobile apps</span>
-                      </li>
-                      <li className="flex items-center space-x-3">
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                        <span>Quality presets</span>
-                      </li>
-                      <li className="flex items-center space-x-3">
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                        <span>Batch processing</span>
-                      </li>
-                      <li className="flex items-center space-x-3">
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                        <span>Smart format conversion</span>
-                      </li>
-                      <li className="flex items-center space-x-3">
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                        <span>Priority support</span>
-                      </li>
-                    </ul>
+                    <div className="mb-6">
+                      <p className="font-semibold mb-4">What's included:</p>
+                      <ul className="space-y-3">
+                        <li className="flex items-center space-x-3">
+                          <CheckCircle className="w-5 h-5 text-green-500" />
+                          <span>Unlimited file compression</span>
+                        </li>
+                        <li className="flex items-center space-x-3">
+                          <CheckCircle className="w-5 h-5 text-green-500" />
+                          <span>All formats supported</span>
+                        </li>
+                        <li className="flex items-center space-x-3">
+                          <CheckCircle className="w-5 h-5 text-green-500" />
+                          <span>Web + mobile apps</span>
+                        </li>
+                        <li className="flex items-center space-x-3">
+                          <CheckCircle className="w-5 h-5 text-green-500" />
+                          <span>Quality presets</span>
+                        </li>
+                        <li className="flex items-center space-x-3">
+                          <CheckCircle className="w-5 h-5 text-green-500" />
+                          <span>Batch processing</span>
+                        </li>
+                        <li className="flex items-center space-x-3">
+                          <CheckCircle className="w-5 h-5 text-green-500" />
+                          <span>Smart format conversion</span>
+                        </li>
+                        <li className="flex items-center space-x-3">
+                          <CheckCircle className="w-5 h-5 text-green-500" />
+                          <span>Priority support</span>
+                        </li>
+                      </ul>
+                    </div>
                     <Button 
-                      className="w-full bg-black hover:bg-gray-800 text-white text-xl py-6 rounded-none font-bold"
+                      className="w-full bg-black hover:bg-gray-800 text-white text-xl py-6 rounded-none font-bold mb-4"
                       onClick={() => { setShowCompressor(true); setActiveTab('compress'); }}
                     >
                       Get Squnch
                     </Button>
-                    <p className="text-center text-sm text-gray-600 mt-4">7-day money back guarantee</p>
+                    <p className="text-center text-sm text-gray-600">7-day money back guarantee</p>
                   </CardContent>
                 </Card>
               </div>
+            </div>
+          </section>
+
+          {/* API Section */}
+          <section className="py-20 px-6 bg-gray-50 relative z-10">
+            <div className="container mx-auto max-w-6xl">
+              <div className="text-center mb-12">
+                <Code className="w-16 h-16 mx-auto text-primary mb-4" />
+                <h2 className="text-4xl font-black mb-4">For developers</h2>
+                <p className="text-xl text-gray-600">Need compression in your app? Our API makes it simple.</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <Card className="p-6 rounded-3xl bg-white">
+                  <CardHeader>
+                    <CardTitle className="text-xl font-bold">API Basic</CardTitle>
+                    <div className="text-3xl font-black text-primary">$9.99<span className="text-base text-gray-600 font-normal">/month</span></div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 mb-4">5,000 calls, all endpoints, email support</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="p-6 border-2 border-primary rounded-3xl bg-white">
+                  <CardHeader>
+                    <CardTitle className="text-xl font-bold">API Pro</CardTitle>
+                    <div className="text-3xl font-black text-primary">$19.99<span className="text-base text-gray-600 font-normal">/month</span></div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 mb-4">25,000 calls, priority processing, webhooks</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="p-6 rounded-3xl bg-white">
+                  <CardHeader>
+                    <CardTitle className="text-xl font-bold">API Enterprise</CardTitle>
+                    <div className="text-3xl font-black text-primary">$99.99+<span className="text-base text-gray-600 font-normal">/month</span></div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 mb-4">100,000+ calls, dedicated resources, SLA</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </section>
+
+          {/* Trust/Security */}
+          <section className="py-16 px-6 relative z-10">
+            <div className="container mx-auto max-w-4xl text-center">
+              <Shield className="w-16 h-16 mx-auto text-primary mb-6" />
+              <h2 className="text-4xl font-black mb-8">Your files, your privacy</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                  <Image className="w-8 h-8 mx-auto text-blue-500 mb-4" />
+                  <p className="text-gray-600">Images compress on your device.</p>
+                </div>
+                <div>
+                  <Video className="w-8 h-8 mx-auto text-purple-500 mb-4" />
+                  <p className="text-gray-600">Videos process securely and delete immediately.</p>
+                </div>
+                <div>
+                  <Shield className="w-8 h-8 mx-auto text-green-500 mb-4" />
+                  <p className="text-gray-600">We never store your content.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Mobile App Teaser */}
+          <section className="py-16 px-6 bg-gray-50 relative z-10">
+            <div className="container mx-auto max-w-4xl text-center">
+              <Smartphone className="w-16 h-16 mx-auto text-primary mb-6" />
+              <h2 className="text-4xl font-black mb-4">Coming soon</h2>
+              <p className="text-xl text-gray-600 mb-8">
+                <strong>iOS and Android apps</strong><br />
+                Same compression power, designed for mobile.
+              </p>
+              <Button variant="outline" size="lg" className="border-2 border-primary text-primary hover:bg-primary hover:text-white font-bold">
+                Get notified
+              </Button>
             </div>
           </section>
 
