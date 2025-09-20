@@ -52,9 +52,9 @@ class SqunchAPITester:
         return video_data
     
     def test_api_root(self):
-        """Test GET /api/ endpoint"""
+        """Test GET /api endpoint"""
         try:
-            response = self.session.get(f"{BASE_URL}/", timeout=TIMEOUT)
+            response = self.session.get(f"{BASE_URL}", timeout=TIMEOUT)
             
             if response.status_code == 200:
                 data = response.json()
