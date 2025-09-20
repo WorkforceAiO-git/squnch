@@ -1,0 +1,2 @@
+# squnch
+File compression app
